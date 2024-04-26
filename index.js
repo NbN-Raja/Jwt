@@ -5,6 +5,8 @@ const port = 3000
 const bodyParser= require("body-parser")
 const errorHandler = require("./src/helpers/prismaerror.js")
 const morgan = require('morgan');
+const path= require("path")
+const { MulterError } = require("./middleware/multer.js")
 
 
 // Middleware
@@ -13,6 +15,10 @@ app.use(errorHandler);
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(morgan('dev'));
+app.use(MulterError)
+
+// midleware for static public file
+app.use(express.static(path.join(__dirname,"public")));
 
 app.get('/', (req, res) => res.send('Hello World!'))
 

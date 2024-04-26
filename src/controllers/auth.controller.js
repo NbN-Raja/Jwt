@@ -40,8 +40,7 @@ exports.post = async (req, res) => {
             }
         });
         const refreshToken = jwt.sign({ id: createUser.id }, process.env.JWT_REFRESH, { expiresIn: "1y" });
-
-         await prisma.users.update({
+await prisma.users.update({
             where:{
                 id:createUser.id
             },
@@ -49,6 +48,7 @@ exports.post = async (req, res) => {
                 refreshToken:refreshToken
             }
         })
+         
 
         return res.status(201).json(new ApiResponse(201, createUser, "User created successfully"));
     } catch (error) {
@@ -85,15 +85,21 @@ exports.login= async(req,res)=>{
     const accessToken= jwt.sign({id:data.id,role:data.role},process.env.JWT_ACCESS,{
         expiresIn: "1h"
     })
+    
 
-    const refreshToken= await prisma.users.findFirst({
-        where:{
-            id:data.id
-        },
-        select:{
-            refreshToken:true
-        }
-    }) 
+    let refreshToken = data.refreshToken;
+
+    if (!refreshToken) {
+        // Update refresh token if it doesn't exist
+        refreshToken = jwt.sign({ id: data.id, role: data.role }, process.env.JWT_REFRESH, {
+            expiresIn: "1w"
+        });
+
+        await prisma.users.update({
+            where: { id: data.id },
+            data: { refreshToken: refreshToken }
+        });
+    }
 
     res.status(200).json(new ApiResponse(200, {accessToken,refreshToken}, "User Login successfully"))
    
@@ -144,4 +150,25 @@ exports.reset=async(req,res)=>{
         res.status(500).json({message:error.message})
     }
 
+}
+
+
+// logout
+
+exports.logout= async(req,res)=>{
+    try {
+        const id= parseInt(req.params.id);
+        await prisma.users.update({
+            where:{
+                id:id
+            },
+            data:{
+                refreshToken:null
+            }
+        })
+        return res.status(200).send(new ApiResponse(200,null,"User logout successfully"))
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message:error.message})
+    }
 }

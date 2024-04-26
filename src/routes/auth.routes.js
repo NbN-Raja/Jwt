@@ -12,6 +12,7 @@ module.exports = (app) => {
 
     router.post("/login", upload.none(), authController.login)
     router.post("/reset", upload.none(), authController.reset)
+    router.post("/logout/:id", upload.none(), authController.logout)
     
     // Add vendors
     

@@ -33,3 +33,13 @@ enum Role {
 }
 
 
+model Products {
+  id       Int    @id @default(autoincrement())
+  name  String?
+  price Float?
+  description String?
+  image   String?
+  banner_image String?
+  created_at  DateTime @default(now()) @map("created_at")
+  updated_at  DateTime @default(now()) @map("updated_at")
+}
